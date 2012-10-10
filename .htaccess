@@ -1,14 +1,6 @@
-SetEnv APPLICATION_ENV hab1_development
-#SetEnv APPLICATION_ENV vlad1_development
-php_flag magic_quotes_gpc Off
-
-Options +FollowSymlinks
 AddDefaultCharset utf-8
 
 RewriteEngine On
-RewriteCond %{HTTP_HOST} ^www\.hab1\.ru$ [NC]
-RewriteRule ^(.*)$ http://hab1.ru/$1 [R=301,L]
-
 RewriteCond %{REQUEST_FILENAME} -s [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
 RewriteCond %{REQUEST_FILENAME} -d
