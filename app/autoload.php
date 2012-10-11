@@ -5,5 +5,7 @@ spl_autoload_register(function($name) {
     array_pop($namespaces);
     $namespaces = array_map('strtolower', $namespaces);
 
-    require_once dirname(__DIR__) . '/' . implode('/', $namespaces) . '.php';
+    if(file_exists(dirname(__DIR__) . '/' . implode('/', $namespaces) . '.php')) {
+        require_once dirname(__DIR__) . '/' . implode('/', $namespaces) . '.php';
+    }
 });
