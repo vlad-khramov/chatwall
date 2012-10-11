@@ -2,11 +2,12 @@
 namespace App\Models;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use App\System\DomainObject;
 
 /**
  * @Entity @Table(name="users")
  **/
-class User {
+class User extends DomainObject {
 
     /**
      * @Id @Column(type="integer")
@@ -23,25 +24,11 @@ class User {
      **/
     protected $messages = null;
 
-    public function __construct() {
+    public function __construct(array $options = null) {
+        parent::__construct($options);
         $this->messages = new ArrayCollection();
     }
 
-    public function getId() {
-        return $this->id;
-    }
-
-    public function setId($id) {
-        $this->id = $id;
-    }
-
-    public function getName() {
-        return $this->name;
-    }
-
-    public function setName($name) {
-        $this->name = $name;
-    }
 
 }
 
@@ -50,7 +37,7 @@ class User {
 /**
  * @Entity @Table(name="messages")
  **/
-class Message {
+class Message extends DomainObject {
 
     /**
      * @Id @Column(type="integer") @GeneratedValue
@@ -69,23 +56,4 @@ class Message {
      **/
     protected $user;
 
-    public function getId() {
-        return $this->id;
-    }
-
-    public function getText() {
-        return $this->text;
-    }
-
-    public function setText($text) {
-        $this->text = $text;
-    }
-
-    public function getDate() {
-        return $this->date;
-    }
-
-    public function setDate($date) {
-        $this->date = $date;
-    }
 }
