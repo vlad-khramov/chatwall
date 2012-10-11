@@ -45,13 +45,17 @@ class App {
         return array(
             'code' => '200',
             'content_type' => 'text/html',
-            'text' => ''
+            'text' => '',
+            'cookie' => array()
         );
     }
 
     private function printHtml($response) {
         header('Content-type: '.$response['content_type']);
         header(' ', true, $response['code']);
+        foreach($response['cookie'] as $name => $val) {
+            setcookie($name, $val);
+        }
         print $response['text'];
 
     }
