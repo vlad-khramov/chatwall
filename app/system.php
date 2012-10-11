@@ -8,6 +8,8 @@ class Locator
 
     static private $templatingSystem;
 
+    static private $em;
+
     public static function getConfig() {
         if(!self::$config) {
             if(!$configPath=getenv('CONFIG_PATH')) {
@@ -26,6 +28,14 @@ class Locator
             ));
         }
         return self::$templatingSystem;
+    }
+
+    public static function getEm() {
+        if(!self::$em) {
+            $config = \Doctrine\ORM\Tools\Setup::createAnnotationMetadataConfiguration(array(__DIR__), DEBUG);
+            self::$em = \Doctrine\ORM\EntityManager::create(self::getConfig()->db, $config);
+        }
+        return self::$em;
     }
 
 
@@ -81,6 +91,9 @@ class App {
                     'code' => 500,
                     'text' => 'Application error'
                 );
+                if(DEBUG) {
+                    $response['text'] = $e->getMessage() . $e->getTrace();
+                }
             }
         } else {
             $response = array(
