@@ -48,7 +48,7 @@ class User {
 
 
 /**
- * @Entity @Table(name="users")
+ * @Entity @Table(name="messages")
  **/
 class Message {
 
