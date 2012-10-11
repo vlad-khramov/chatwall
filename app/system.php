@@ -24,7 +24,7 @@ class Locator
         if(!self::$templatingSystem) {
             $loader = new \Twig_Loader_Filesystem(self::getConfig()->templates_dir);
             self::$templatingSystem = new \Twig_Environment($loader, array(
-                'cache' => self::getConfig()->cache_dir,
+                'cache' => DEBUG?false:self::getConfig()->cache_dir,
             ));
         }
         return self::$templatingSystem;
@@ -122,4 +122,54 @@ class Router {
             return false;
         }
     }
+}
+
+class DomainObject {
+
+    public function __construct(array $options = null)
+    {
+        if (is_array($options)) {
+            $this->setOptions($options);
+        }
+    }
+
+    public function __set($name, $value)
+    {
+        if (method_exists($this, $method = 'set' . ucfirst($name))) {
+            $this->$method($value);
+        }
+        elseif (property_exists($this, $property = $name)) {
+            $this->$property = $value;
+        }
+        else {
+            throw new \Exception('Invalid property');
+        }
+    }
+
+    public function __get($name)
+    {
+        if ( method_exists($this, $method = 'get' . ucfirst($name))) {
+            return $this->$method();
+        }
+        elseif ( property_exists($this, $property = $name)) {
+            return $this->$property;
+        }
+        else {
+            throw new \Exception('Invalid property');
+        }
+
+    }
+
+    public function setOptions(array $options)
+    {
+        foreach ($options as $key => $value) {
+            $this->$key = $value;
+        }
+        return $this;
+    }
+
+    public function asArr() {
+        return get_object_vars($this);
+    }
+
 }
