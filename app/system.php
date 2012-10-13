@@ -47,7 +47,8 @@ class App {
         return array(
             'GET' => $_GET,
             'POST' => $_POST,
-            'COOKIE' => $_COOKIE
+            'COOKIE' => $_COOKIE,
+            'FILES' => $_FILES
         );
     }
 
@@ -185,5 +186,13 @@ class Controller {
 
     public function __construct($request) {
         $this->request = $request;
+    }
+
+    public function param($name, $default, $type="GET") {
+        if(isset($this->request[$type][$name])) {
+            return $this->request[$type][$name];
+        } else {
+            return $default;
+        }
     }
 }
