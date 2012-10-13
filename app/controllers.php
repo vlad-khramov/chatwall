@@ -2,22 +2,27 @@
 namespace App\Controllers;
 use \App\System\Locator;
 use \App\System\Controller;
+use \App\System\Manager;
 use \App\Models\User;
 use \App\Models\Message;
+use \App\Models\MessageManager;
+
 
 class Home extends Controller {
 
-    protected $em;
+    protected $userManager;
+    protected $messageManager;
+
     public function __construct($request) {
         parent::__construct($request);
-        $this->em = Locator::getEm();
+        $this->userManager = new Manager("\\App\\Models\\User");
+        $this->messageManager = new MessageManager();
     }
 
     protected function getUser() {
         if(isset($this->request['COOKIE']['userId'])) {
             $userId = $this->request['COOKIE']['userId'];
-            $user = $this->em->find("\\App\\Models\\User", $userId);
-
+            $user = $this->userManager->get($userId);
         } else {
             $userId = rand(1, PHP_INT_MAX);
             $user = null;
@@ -51,8 +56,7 @@ class Home extends Controller {
         $user = $this->getUser();
         if(!empty($this->request['POST']['value'])) {
             $user->name = $this->request['POST']['value'];
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userManager->save($user, true);
         } else {
             return "Name can't be empty";
         }
@@ -65,10 +69,9 @@ class Home extends Controller {
 
         if(!$id) return '';
 
-        $message = $this->em->find("\\App\\Models\\Message", $id);
+        $message = $this->messageManager->get($id);
         if($message && $message->user == $user) {
-            $this->em->remove($message);
-            $this->em->flush();
+            $this->messageManager->delete($message, true);
         }
     }
 
@@ -89,9 +92,8 @@ class Home extends Controller {
             'user' => $user
         ));
 
-        $this->em->persist($user);
-        $this->em->persist($message);
-        $this->em->flush();
+        $this->userManager->save($user);
+        $this->messageManager->save($message, true);
 
     }
 
@@ -100,18 +102,16 @@ class Home extends Controller {
         $id = $this->param('id', 0);
         if(!$id) return '';
 
-        $message = $this->em->find("\\App\\Models\\Message", $id);
+        $message = $this->messageManager->get($id);
 
         if(!$message || $message->likedUsers->contains($user)) {
             return '';
         }
 
 
-
-        $this->em->persist($user);
+        $this->userManager->save($user);
         $message->like($user);
-        $this->em->persist($message);
-        $this->em->flush();
+        $this->messageManager->save($message, true);
 
         return json_encode(array('likes_count'=> $message->likesCount));
     }
@@ -120,14 +120,7 @@ class Home extends Controller {
         $user = $this->getUser();
         $from = (int)$this->param('from', 0);
 
-
-        $dql = "SELECT m, u FROM \\App\\Models\\Message m JOIN m.user u WHERE m.id>{$from} ORDER BY m.date DESC";
-
-        $query = $this->em->createQuery($dql);
-        if(!$from) {
-            $query->setMaxResults(5);
-        }
-        $messages = $query->getResult();
+        $messages = $this->messageManager->getLastMessages($from, 5);
 
         $resultJSON = array();
         foreach(array_reverse($messages) as $message) {

@@ -3,6 +3,7 @@ namespace App\Models;
 
 use \Doctrine\Common\Collections\ArrayCollection;
 use \App\System\DomainObject;
+use \App\System\DeleteMarkable;
 
 /**
  * @Entity @Table(name="users")
@@ -51,11 +52,10 @@ class User extends DomainObject {
 }
 
 
-
 /**
  * @Entity @Table(name="messages")
  **/
-class Message extends DomainObject {
+class Message extends DomainObject implements DeleteMarkable {
 
     /**
      * @Id @Column(type="integer") @GeneratedValue
@@ -91,6 +91,16 @@ class Message extends DomainObject {
      **/
     protected $likesCount = 0;
 
+    /**
+     * @Column(type="datetime", nullable=true)
+     **/
+    protected $lastLikeDate = null;
+
+    /**
+     * @Column(type="datetime", nullable=true)
+     **/
+    protected $isDeleted = null;
+
 
     public function __construct(array $options = null) {
         parent::__construct($options);
@@ -106,9 +116,28 @@ class Message extends DomainObject {
     public function like(User $user) {
         $this->likedUsers[] = $user;
         $this->likesCount = count($this->likedUsers);
+        $this->lastLikeDate = new \DateTime();
         $user->addLikedMessage($this);
     }
 
+
+}
+
+class MessageManager extends \App\System\Manager {
+
+    public function __construct() {
+        parent::__construct("\\App\\Models\\Message");
+    }
+
+    public function getLastMessages($from, $limit) {
+        $dql = "SELECT m, u FROM \\App\\Models\\Message m JOIN m.user u WHERE m.isDeleted is null and m.id>{$from} ORDER BY m.date DESC";
+
+        $query = $this->em->createQuery($dql);
+        if(!$from) {
+            $query->setMaxResults($limit);
+        }
+        return $query->getResult();
+    }
 }
 
 

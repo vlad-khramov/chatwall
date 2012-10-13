@@ -82,6 +82,7 @@
     <script src="/jquery/jquery.timers.js"></script>
     <script type="text/javascript">
         var last_message = 0;
+        var first_message = 0;
         var loading = false;
 
         function attach_wrapper(str) {
@@ -141,12 +142,14 @@
                         })
 
                         last_message = message.id;
+                        if(!first_message) {
+                            first_message = message.id;
+                        }
                     });
                 }
             );
             loading = false;
         }
-
 
 
         $(document).ready(function(){
@@ -178,7 +181,6 @@
             });
 
             $('#add_picture').click(function(){
-                http://duckranger.com/2012/06/pretty-file-input-field-in-bootstrap/
                 $("#attachments").append(attach_wrapper('Select image: <input name="images[]" type="file">'));
             });
 

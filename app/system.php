@@ -146,6 +146,11 @@ class Router {
     }
 }
 
+interface DeleteMarkable {
+
+}
+
+
 class DomainObject {
 
     public function __construct(array $options = null)
@@ -210,4 +215,52 @@ class Controller {
             return $default;
         }
     }
+}
+
+
+class Manager {
+    protected $class;
+    protected $em;
+    protected $deleteMarkable;
+
+    public function __construct($class) {
+        $this->class = $class;
+        $this->em = Locator::getEm();
+        $this->deleteMarkable = in_array('App\\System\\DeleteMarkable', class_implements($this->class));
+    }
+
+    public function get($pk) {
+        if($this->deleteMarkable) {
+            $dql = "SELECT c FROM {$this->class} c WHERE c.isDeleted is null and c.id={$pk}";
+            $query = $this->em->createQuery($dql);
+            try {
+                return $query->getSingleResult();
+            } catch(\Exception $e) {
+                return null;
+            }
+        } else {
+            return $this->em->find($this->class, $pk);
+        }
+    }
+
+    public function save($object, $flush = false) {
+        $this->em->persist($object);
+        if($flush) {
+            $this->em->flush();
+        }
+    }
+
+    public function delete($object, $flush = false) {
+        if($this->deleteMarkable) {
+            $object->isDeleted = new \DateTime();
+            $this->em->persist($object);
+        } else {
+            $this->em->remove($object);
+        }
+        if($flush) {
+            $this->em->flush();
+        }
+    }
+
+
 }
