@@ -130,12 +130,53 @@ class MessageManager extends \App\System\Manager {
     }
 
     public function getLastMessages($from, $limit) {
-        $dql = "SELECT m, u FROM \\App\\Models\\Message m JOIN m.user u WHERE m.isDeleted is null and m.id>{$from} ORDER BY m.date DESC";
+        $dql = "
+            SELECT
+                m, u
+            FROM
+                \\App\\Models\\Message m
+                JOIN m.user u
+            WHERE
+                m.isDeleted is null
+                and m.id>{$from}
+            ORDER BY m.date DESC
+        ";
 
         $query = $this->em->createQuery($dql);
         if(!$from) {
             $query->setMaxResults($limit);
         }
+        return $query->getResult();
+    }
+
+    public function getDeletedMessages(\DateTime $from) {
+        $dql = "
+            SELECT m
+            FROM
+                \\App\\Models\\Message m
+            WHERE
+                m.isDeleted is not null
+                and m.isDeleted > :from
+        ";
+
+        $query = $this->em->createQuery($dql)->setParameter('from', $from);
+
+        return $query->getResult();
+    }
+
+    public function getLikedMessages(\DateTime $from) {
+        $dql = "
+            SELECT m
+            FROM
+                \\App\\Models\\Message m
+            WHERE
+                m.isDeleted is null
+                and m.lastLikeDate is not null
+                and m.lastLikeDate > :from
+        ";
+
+        $query = $this->em->createQuery($dql)->setParameter('from', $from);
+
         return $query->getResult();
     }
 }

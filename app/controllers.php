@@ -43,11 +43,13 @@ class Home extends Controller {
     public function home() {
 
         $user = $this->getUser();
+        $now = new \DateTime();
 
         return array(
             'cookie' => array('userId'=>$user->id),
             'text' => Locator::getTS()->render('base.html', array(
-                'user' => $user
+                'user' => $user,
+                'now' => $now->format('U')
             ))
         );
     }
@@ -130,6 +132,39 @@ class Home extends Controller {
                 'date' => $message->date->format('H:i:s'),
                 'own' => $message->user == $user,
                 'username' => $message->user->name,
+                'likes_count' => $message->likesCount,
+                'liked' => $message->likedUsers->contains($user)
+            );
+        }
+
+        return array(
+            'content_type' => 'application/json',
+            'text' => json_encode($resultJSON)
+        );
+    }
+
+    public function messagesGetChanges() {
+        $user = $this->getUser();
+        $from = (int)$this->param('from', 0);
+
+        $now = new \DateTime('now');
+        $resultJSON = array(
+            'now' => $now->format('U'),
+            'liked' => array(),
+            'deleted' => array(),
+        );
+
+        $fromDate = \DateTime::createFromFormat('U', $from);
+        $fromDate->setTimezone(Locator::getTZ());
+        $messages = $this->messageManager->getDeletedMessages($fromDate);
+        foreach($messages as $message) {
+            $resultJSON['deleted'][] = $message->id;
+        }
+
+        $messages = $this->messageManager->getLikedMessages($fromDate);
+        foreach($messages as $message) {
+            $resultJSON['liked'][] = array(
+                'id' => $message->id,
                 'likes_count' => $message->likesCount,
                 'liked' => $message->likedUsers->contains($user)
             );

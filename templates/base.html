@@ -82,11 +82,21 @@
     <script src="/jquery/jquery.timers.js"></script>
     <script type="text/javascript">
         var last_message = 0;
-        var first_message = 0;
-        var loading = false;
+        var last_changes = {{ now }};
+        var MESSAGES_INTERVAL = 5;
+        var CHANGES_INTERVAL = 7;
 
-        function attach_wrapper(str) {
+
+        function get_attach_wrapper(str) {
             return '<div class="well">'+str+'</div>';
+        }
+
+        function get_likes_area(likes_count, liked) {
+            if(liked) {
+                return '<i class="icon-thumbs-up liked"></i> [' + likes_count + ']';
+            } else {
+                return '<a href="#" title="Like" class="like-message"><i class="icon-thumbs-up">&nbsp;&nbsp;&nbsp;</i></a> [' + likes_count + ']'
+            }
         }
 
         function delete_message(id) {
@@ -106,7 +116,7 @@
                 function(data) {
                     if(data.likes_count) {
                         $('#message'+id+' .likes-count').text(data.likes_count);
-                        $('#message'+id+' .likes').html('<i class="icon-thumbs-up liked"></i> [' + data.likes_count + ']');
+                        $('#message'+id+' .likes').html(get_likes_area(data.likes_count, true));
                     }
                 }
             );
@@ -114,19 +124,18 @@
 
 
         function load_messages() {
-            if(loading) return;
-            loading = true;
             //TODO error handling
             $.getJSON(
                 '/messages/getlast?from='+last_message,
                 function(data) {
                     $.each(data, function(i, message) {
+                        if($('#message'+message.id).length)return;
                         $('#messages').prepend(
                             '<div class="well" id="message'+message.id+'">'+
                                 '<div class="message-legend">'+
                                     message.username + ' at ' + message.date +
                                     (message.own?' <a href="#" title="Delete message" class="delete-message"><i class="icon-remove"></i></a>':'') +
-                                    '<span class="pull-right likes">'+(message.liked?'<i class="icon-thumbs-up liked"></i> [' + message.likes_count + ']':'<a href="#" title="Like" class="like-message"><i class="icon-thumbs-up"></i></a> [' + message.likes_count + ']')+'</span>' +
+                                    '<span class="pull-right likes">'+get_likes_area(message.likes_count, message.liked)+'</span>' +
                                 '</div>'+
                                 message.text+
                             '</div>');
@@ -142,14 +151,30 @@
                         })
 
                         last_message = message.id;
-                        if(!first_message) {
-                            first_message = message.id;
-                        }
                     });
                 }
             );
-            loading = false;
         }
+
+        function load_messages_changes() {
+            $.getJSON(
+                '/messages/getchanges?from='+(last_changes-CHANGES_INTERVAL),
+                function(data) {
+                    last_changes = data.now;
+                    $.each(data.deleted, function(i, val) {
+                        $('#message'+val).remove();
+                    })
+                    $.each(data.liked, function(i, message) {
+                        $('#message'+message.id+' .likes').html(get_likes_area(message.likes_count, message.liked));
+                        $('#message'+message.id+' .like-message').click(function() {
+                            like_message(message.id);
+                            return false;
+                        })
+                    })
+                }
+            )
+        }
+
 
 
         $(document).ready(function(){
@@ -181,20 +206,23 @@
             });
 
             $('#add_picture').click(function(){
-                $("#attachments").append(attach_wrapper('Select image: <input name="images[]" type="file">'));
+                $("#attachments").append(get_attach_wrapper('Select image: <input name="images[]" type="file">'));
             });
 
             $('#add_video').click(function(){
-                $("#attachments").append(attach_wrapper('<textarea name="videos[]" placeholder="Youtube video URL or embedded code" class="video"></textarea>'));
+                $("#attachments").append(get_attach_wrapper('<textarea name="videos[]" placeholder="Youtube video URL or embedded code" class="video"></textarea>'));
             });
 
             $('#add_link').click(function(){
-                $("#attachments").append(attach_wrapper('<input name="links[]" type="text" placeholder="URL"></div>'));
+                $("#attachments").append(get_attach_wrapper('<input name="links[]" type="text" placeholder="URL"></div>'));
             });
 
             load_messages();
-            $(document).everyTime(3000, function(i) {
+            $(document).everyTime(MESSAGES_INTERVAL, function(i) {
                 load_messages();
+            });
+            $(document).everyTime(CHANGES_INTERVAL*1000+50, function(i) {
+                load_messages_changes();
             });
         });
     </script>

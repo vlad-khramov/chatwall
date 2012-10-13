@@ -10,6 +10,8 @@ class Locator
 
     static private $em;
 
+    static private $timezone;
+
     public static function getConfig() {
         if(!self::$config) {
             if(!$configPath=getenv('CONFIG_PATH')) {
@@ -53,6 +55,14 @@ class Locator
         return self::$em;
     }
 
+    public static function  getTZ() {
+        if(!self::$timezone) {
+            self::$timezone = new \DateTimeZone(self::getConfig()->timezone);
+        }
+        return self::$timezone;
+    }
+
+
 
 }
 
@@ -87,6 +97,8 @@ class App {
     }
 
     public function run() {
+        date_default_timezone_set(Locator::getConfig()->timezone);
+
         $router = new Router(Locator::getConfig()->routes);
 
         $actionFullName = $router->getControllerName(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
