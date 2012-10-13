@@ -12,7 +12,7 @@ return array(
     /* example for sqlite
     'db' => array(
         'driver' => 'pdo_sqlite',
-        'path' => SYSTEM_DIR . '\db.sqlite'
+        'path' => SYSTEM_DIR . '/db.sqlite'
 
     ),*/
 
