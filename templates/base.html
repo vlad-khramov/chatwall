@@ -103,7 +103,7 @@
 
         function get_attachment(type, data) {
             if(type=='link') {
-                return '<div><i class="icon-share"></i> <a rel="nofollow" href="'+data+'">'+data+'</a></div>';
+                return '<div><i class="icon-share"></i> <a rel="nofollow" target="_blank" href="'+data+'">'+data+'</a></div>';
             } else if(type=='image') {
                 return '<a href="/media/'+data+'" class="images"><img src="/media/preview/'+data+'"></a> ';
             } else if(type=='video') {
