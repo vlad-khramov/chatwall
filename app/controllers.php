@@ -123,6 +123,12 @@ class Home extends Controller {
                     continue;
                 }
 
+                require_once SYSTEM_DIR . '/vendor/thumb/Thumbnail.php';
+                \Thumbnail::output(Locator::getConfig()->media_dir . '/' . $newFileName,
+                    Locator::getConfig()->media_dir . '/preview/' . $newFileName,
+                    array('width' => 150, 'height' => 150, 'quality' => 95)
+                );
+
                 $attachment = new Attachment(array(
                     'type' => 'image',
                     'data' => $newFileName,

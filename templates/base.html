@@ -17,6 +17,7 @@
     </style>
     <link href="/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
     <link href="/bootstrap/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet">
+    <link href="/jquery/lightbox/css/jquery.lightbox-0.5.css" rel="stylesheet">
     <link href="/style.css" rel="stylesheet">
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -80,6 +81,7 @@
     <script src="/bootstrap/bootstrap-editable/js/bootstrap-editable.min.js"></script>
     <script src="http://malsup.github.com/jquery.form.js"></script>
     <script src="/jquery/jquery.timers.js"></script>
+    <script src="/jquery/lightbox/js/jquery.lightbox-0.5.js"></script>
     <script type="text/javascript">
         var last_message = 0;
         var last_changes = {{ now }};
@@ -101,11 +103,11 @@
 
         function get_attachment(type, data) {
             if(type=='link') {
-                return '<hr><i class="icon-share"></i> <a rel="nofollow" href="'+data+'">'+data+'</a>';
+                return '<div><i class="icon-share"></i> <a rel="nofollow" href="'+data+'">'+data+'</a></div>';
             } else if(type=='image') {
-                return '<hr><img src="/media/'+data+'">';
+                return '<a href="/media/'+data+'" class="images"><img src="/media/preview/'+data+'"></a> ';
             } else if(type=='video') {
-                return '<hr><iframe width="560" height="315" src="http://www.youtube.com/embed/'+data+'" frameborder="0" allowfullscreen></iframe>';
+                return '<iframe width="560" height="315" src="http://www.youtube.com/embed/'+data+'" frameborder="0" allowfullscreen></iframe>';
             }
         }
 
@@ -148,13 +150,18 @@
                                 message.text+
                             '</div>');
 
+                        neeededDelimeter = false;
                         for(type in attachment_types) {
+                            neeededDelimeter = true;
                             if(message.attachments[attachment_types[type]]) {
                                 $.each(message.attachments[attachment_types[type]], function(i, attachment) {
-                                    $('#message'+message.id).append(get_attachment(attachment_types[type], attachment));
+                                    $('#message'+message.id).append((neeededDelimeter?'<hr>':'')+get_attachment(attachment_types[type], attachment));
+                                    neeededDelimeter = false;
                                 });
                             }
                         }
+
+                        $('#message'+message.id+' a.images').lightBox({fixedNavigation:true});
 
                         $('#message'+message.id+' .delete-message').click(function() {
                             delete_message(message.id);
@@ -210,7 +217,6 @@
 
             $('#message_form').ajaxForm({
                 url: '/messages/add',
-                target: '#attachments',
                 success: function() {
                     load_messages();
                     $('#attachments').empty();
