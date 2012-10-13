@@ -239,7 +239,7 @@
             });
 
             load_messages();
-            $(document).everyTime(MESSAGES_INTERVAL, function(i) {
+            $(document).everyTime(MESSAGES_INTERVAL*1000, function(i) {
                 load_messages();
             });
             $(document).everyTime(CHANGES_INTERVAL*1000+50, function(i) {

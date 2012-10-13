@@ -28,7 +28,7 @@ class Home extends Controller {
             $userId = $this->request['COOKIE']['userId'];
             $user = $this->userManager->get($userId);
         } else {
-            $userId = rand(1, PHP_INT_MAX);
+            $userId = rand(1, 2147483647);
             $user = null;
         }
 
