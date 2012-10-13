@@ -9,13 +9,6 @@ return array(
         'dbname' => 'chatwall',
 
     ),
-    /* example for sqlite
-    'db' => array(
-        'driver' => 'pdo_sqlite',
-        'path' => SYSTEM_DIR . '/db.sqlite'
-
-    ),*/
-
     'routes' => array(
         '/' => 'home.home',
         '/user/save' => 'home.userSave',
