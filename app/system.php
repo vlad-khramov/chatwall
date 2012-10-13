@@ -79,8 +79,14 @@ class App {
             try {
                 list($controllerName, $actionName) = explode('.', $actionFullName);
                 $controllerName = "\\App\\Controllers\\". ucfirst(strtolower($controllerName));
-                $controller = new $controllerName();
-                $result = $controller->$actionName($request);
+                if(!class_exists($controllerName)) {
+                    throw new \Exception('Controller not exists: ' . $controllerName);
+                }
+                $controller = new $controllerName($request);
+                if(!method_exists($controller, $actionName)) {
+                    throw new \Exception('Action not exists: ' . $actionName);
+                }
+                $result = $controller->$actionName();
                 if(is_array($result)) {
                     $response = $result;
                 } else {
@@ -92,7 +98,7 @@ class App {
                     'text' => 'Application error'
                 );
                 if(DEBUG) {
-                    $response['text'] = $e->getMessage() . $e->getTrace();
+                    $response['text'] .= '<br>' . $e->getMessage() . '<br>' . $e->getTraceAsString();
                 }
             }
         } else {
@@ -168,8 +174,16 @@ class DomainObject {
         return $this;
     }
 
-    public function asArr() {
+    public function asArray() {
         return get_object_vars($this);
     }
 
+}
+
+class Controller {
+    protected $request;
+
+    public function __construct($request) {
+        $this->request = $request;
+    }
 }
