@@ -3,7 +3,10 @@
 return array(
     'routes' => array(
         '/' => 'home.home',
-        '/user/save' => 'home.user_save',
+        '/user/save' => 'home.userSave',
+        '/messages/add' => 'home.messagesAdd',
+        '/messages/delete' => 'home.messagesDelete',
+        '/messages/getlast' => 'home.messagesGetLast',
     ),
     'cache_dir' => SYSTEM_DIR . '/cache',
     'templates_dir' => SYSTEM_DIR . '/templates',
@@ -14,5 +17,10 @@ return array(
         'password' => 'password',
         'dbname' => 'chatwall',
 
-    )
+    ),
+    'db2' => array(
+        'driver' => 'pdo_sqlite',
+        'path' => SYSTEM_DIR . '\db.sqlite'
+
+    ),
 );

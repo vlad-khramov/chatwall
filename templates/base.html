@@ -15,8 +15,9 @@
             padding-bottom: 40px;
         }
     </style>
-    <link href="/bootstrap/css/bootstrap-responsive.min" rel="stylesheet">
+    <link href="/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
     <link href="/bootstrap/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet">
+    <link href="/style.css" rel="stylesheet">
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -38,14 +39,28 @@
 <div class="container">
 
     <div class="row">
-        <div class="span8">
-            <div class="well">
-                <h2>Wall</h2>
-            </div>
-        </div>
         <div class="span4">
             <div class="well">
                 Hello, <a href="#" id="username">{{ user.asArray.name }}</a>
+                <form method="POST" id="message_form">
+                    <textarea id="message" name="message" class="span4"></textarea>
+                    <div class="pull-right">
+                        <a id="add_picture" class="btn btn-small" title="Attach picture"><i class="icon-picture"></i></a>
+                        <a id="add_video" class="btn btn-small" title="Attach video"><i class="icon-facetime-video"></i></a>
+                        <a id="add_link" class="btn btn-small" title="Attach link"><i class="icon-share"></i></a>
+                        <input type="submit" class="btn" value="Send message">
+                    </div>
+                    <div class="clearfix"></div>
+                    <hr>
+                    <div id="attachments">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="span8">
+            <div class="well">
+                <h2>Wall</h2>
+                <div id="messages"> </div>
             </div>
         </div>
     </div>
@@ -63,7 +78,54 @@
     <script src="http://code.jquery.com/jquery.min.js"></script>
     <script src="/bootstrap/js/bootstrap.min.js"></script>
     <script src="/bootstrap/bootstrap-editable/js/bootstrap-editable.min.js"></script>
+    <script src="http://malsup.github.com/jquery.form.js"></script>
     <script type="text/javascript">
+        var last_message = 0;
+
+        function attach_wrapper(str) {
+            return '<div class="well">'+str+'</div>';
+        }
+
+        function delete_message(id) {
+            //TODO error handling
+            $.getJSON(
+                '/messages/delete?id='+id,
+                function(data) {
+                    $('#message'+id).remove();
+                }
+            );
+        }
+
+
+        function load_messages() {
+            //TODO error handling
+            $.getJSON(
+                '/messages/getlast?from='+last_message,
+                function(data) {
+                    $.each(data, function(i, message) {
+                        $('#messages').prepend(
+                            '<div class="well" id="message'+message.id+'">'+
+                                '<div class="message-legend">'+
+                                    message.username + ' at ' + message.date +
+                                    (message.own?' <a href="#" title="Delete message" id="delete-message-'+message.id+'"><i class="icon-remove"></i></a>':'') +
+                                    '<span class="pull-right"><a href="" title="Like"><i class="icon-thumbs-up"></i></a> [' + message.likes + ']</span>' +
+                                '</div>'+
+                                message.text+
+                            '</div>');
+
+                        $('#delete-message-'+message.id).click(function() {
+                            delete_message(message.id);
+                            return false;
+                        })
+
+                        last_message = message.id;
+                    });
+                }
+            );
+        }
+
+
+
         $(document).ready(function(){
             $('#username').editable({
                 type:  'text',
@@ -78,12 +140,33 @@
                         return "Name can't be empty";
                 }
             });
+
+            $('#message_form').ajaxForm({
+                url: '/messages/add',
+                target: '#attachments',
+                success: function() {
+                    load_messages();
+                },
+                error: function() {
+                    
+                }
+            });
+
+            $('#add_picture').click(function(){
+                http://duckranger.com/2012/06/pretty-file-input-field-in-bootstrap/
+                $("#attachments").append(attach_wrapper('Select image: <input name="images[]" type="file">'));
+            });
+
+            $('#add_video').click(function(){
+                $("#attachments").append(attach_wrapper('<textarea name="videos[]" placeholder="Youtube video URL or embedded code" class="video"></textarea>'));
+            });
+
+            $('#add_link').click(function(){
+                $("#attachments").append(attach_wrapper('<input name="links[]" type="text" placeholder="URL"></div>'));
+            });
+
+            load_messages();
         });
     </script>
-    <style>
-        #username, #username form {
-            display: inline;
-        }
-    </style>
 </body>
 </html>

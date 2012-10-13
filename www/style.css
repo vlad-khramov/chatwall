@@ -1,0 +1,8 @@
+
+#message, .video, #attachments input {
+    width: 95%;
+}
+
+.message-legend {
+    color: gray;
+}
