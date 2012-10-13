@@ -89,9 +89,31 @@ class Home extends Controller {
             'user' => $user
         ));
 
+        $this->em->persist($user);
         $this->em->persist($message);
         $this->em->flush();
 
+    }
+
+    public function messagesLike() {
+        $user = $this->getUser();
+        $id = $this->param('id', 0);
+        if(!$id) return '';
+
+        $message = $this->em->find("\\App\\Models\\Message", $id);
+
+        if(!$message || $message->likedUsers->contains($user)) {
+            return '';
+        }
+
+
+
+        $this->em->persist($user);
+        $message->like($user);
+        $this->em->persist($message);
+        $this->em->flush();
+
+        return json_encode(array('likes_count'=> $message->likesCount));
     }
 
     public function messagesGetLast() {
@@ -115,7 +137,8 @@ class Home extends Controller {
                 'date' => $message->date->format('H:i:s'),
                 'own' => $message->user == $user,
                 'username' => $message->user->name,
-                'likes' => 0
+                'likes_count' => $message->likesCount,
+                'liked' => $message->likedUsers->contains($user)
             );
         }
 

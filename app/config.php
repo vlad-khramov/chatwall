@@ -6,6 +6,7 @@ return array(
         '/user/save' => 'home.userSave',
         '/messages/add' => 'home.messagesAdd',
         '/messages/delete' => 'home.messagesDelete',
+        '/messages/like' => 'home.messagesLike',
         '/messages/getlast' => 'home.messagesGetLast',
     ),
     'cache_dir' => SYSTEM_DIR . '/cache',

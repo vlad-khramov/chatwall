@@ -32,7 +32,22 @@ class Locator
 
     public static function getEm() {
         if(!self::$em) {
-            $config = \Doctrine\ORM\Tools\Setup::createAnnotationMetadataConfiguration(array(__DIR__), DEBUG);
+
+            $cache = new \Doctrine\Common\Cache\ArrayCache;
+            $config = new \Doctrine\ORM\Configuration;
+            $config->setMetadataCacheImpl($cache);
+            $driverImpl = $config->newDefaultAnnotationDriver(__DIR__);
+            $config->setMetadataDriverImpl($driverImpl);
+            $config->setQueryCacheImpl($cache);
+            $config->setProxyDir(SYSTEM_DIR . '/proxies');
+            $config->setProxyNamespace('App\Proxies');
+
+            if (DEBUG) {
+                $config->setAutoGenerateProxyClasses(true);
+            } else {
+                $config->setAutoGenerateProxyClasses(false);
+            }
+
             self::$em = \Doctrine\ORM\EntityManager::create(self::getConfig()->db, $config);
         }
         return self::$em;

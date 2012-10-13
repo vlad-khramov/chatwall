@@ -6,3 +6,10 @@
 .message-legend {
     color: gray;
 }
+
+.liked {
+    -moz-box-shadow: 0px 0px 8px #999;
+    -webkit-box-shadow: 0px 0px 8px #999;
+    box-shadow: 0px 0px 8px #999;
+    background-color: #CCC;
+}

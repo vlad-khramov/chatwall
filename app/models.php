@@ -24,13 +24,27 @@ class User extends DomainObject {
      **/
     protected $messages = null;
 
+    /**
+     * @ManyToMany(targetEntity="Message", inversedBy="likedUsers")
+     * @JoinTable(name="likes",
+     *   joinColumns={@JoinColumn(name="user_id", referencedColumnName="id")},
+     *   inverseJoinColumns={@JoinColumn(name="message_id", referencedColumnName="id")}
+     * )
+     */
+    protected $likedMessages = null;
+
     public function __construct(array $options = null) {
         parent::__construct($options);
         $this->messages = new ArrayCollection();
+        $this->likedMessages = new ArrayCollection();
     }
 
     public function addMessage(Message $message) {
         $this->messages[] = $message;
+    }
+
+    public function addLikedMessage(Message $message) {
+        $this->likedMessages[] = $message;
     }
 
 
@@ -66,16 +80,33 @@ class Message extends DomainObject {
      **/
     protected $attachments = null;
 
+    /**
+     * @ManyToMany(targetEntity="User", mappedBy="likedMessages")
+     * Users[]
+     */
+    protected $likedUsers = null;
+
+    /**
+     * @Column(type="integer")
+     **/
+    protected $likesCount = 0;
+
 
     public function __construct(array $options = null) {
         parent::__construct($options);
         $this->attachments = new ArrayCollection();
+        $this->likedUsers = new ArrayCollection();
     }
 
     public function setUser(User $user) {
-        var_dump(1);
         $user->addMessage($this);
         $this->user = $user;
+    }
+
+    public function like(User $user) {
+        $this->likedUsers[] = $user;
+        $this->likesCount = count($this->likedUsers);
+        $user->addLikedMessage($this);
     }
 
 }
@@ -104,3 +135,4 @@ class Attachment extends DomainObject {
     protected $message;
 
 }
+

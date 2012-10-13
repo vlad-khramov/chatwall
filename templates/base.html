@@ -96,6 +96,19 @@
             );
         }
 
+        function like_message(id) {
+            //TODO error handling
+            $.getJSON(
+                '/messages/like?id='+id,
+                function(data) {
+                    if(data.likes_count) {
+                        $('#message'+id+' .likes-count').text(data.likes_count);
+                        $('#message'+id+' .likes').html('<i class="icon-thumbs-up liked"></i> [' + data.likes_count + ']');
+                    }
+                }
+            );
+        }
+
 
         function load_messages() {
             //TODO error handling
@@ -107,14 +120,19 @@
                             '<div class="well" id="message'+message.id+'">'+
                                 '<div class="message-legend">'+
                                     message.username + ' at ' + message.date +
-                                    (message.own?' <a href="#" title="Delete message" id="delete-message-'+message.id+'"><i class="icon-remove"></i></a>':'') +
-                                    '<span class="pull-right"><a href="" title="Like"><i class="icon-thumbs-up"></i></a> [' + message.likes + ']</span>' +
+                                    (message.own?' <a href="#" title="Delete message" class="delete-message"><i class="icon-remove"></i></a>':'') +
+                                    '<span class="pull-right likes">'+(message.liked?'<i class="icon-thumbs-up liked"></i> [' + message.likes_count + ']':'<a href="#" title="Like" class="like-message"><i class="icon-thumbs-up"></i></a> [' + message.likes_count + ']')+'</span>' +
                                 '</div>'+
                                 message.text+
                             '</div>');
 
-                        $('#delete-message-'+message.id).click(function() {
+                        $('#message'+message.id+' .delete-message').click(function() {
                             delete_message(message.id);
+                            return false;
+                        })
+
+                        $('#message'+message.id+' .like-message').click(function() {
+                            like_message(message.id);
                             return false;
                         })
 
