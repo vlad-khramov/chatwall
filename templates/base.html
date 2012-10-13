@@ -146,9 +146,11 @@
                 target: '#attachments',
                 success: function() {
                     load_messages();
+                    $('#attachments').empty();
+                    $('#message_form').clearForm();
                 },
                 error: function() {
-                    
+
                 }
             });
 
