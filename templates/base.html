@@ -79,8 +79,10 @@
     <script src="/bootstrap/js/bootstrap.min.js"></script>
     <script src="/bootstrap/bootstrap-editable/js/bootstrap-editable.min.js"></script>
     <script src="http://malsup.github.com/jquery.form.js"></script>
+    <script src="/jquery/jquery.timers.js"></script>
     <script type="text/javascript">
         var last_message = 0;
+        var loading = false;
 
         function attach_wrapper(str) {
             return '<div class="well">'+str+'</div>';
@@ -111,6 +113,8 @@
 
 
         function load_messages() {
+            if(loading) return;
+            loading = true;
             //TODO error handling
             $.getJSON(
                 '/messages/getlast?from='+last_message,
@@ -140,6 +144,7 @@
                     });
                 }
             );
+            loading = false;
         }
 
 
@@ -186,6 +191,9 @@
             });
 
             load_messages();
+            $(document).everyTime(3000, function(i) {
+                load_messages();
+            });
         });
     </script>
 </body>
