@@ -1,6 +1,21 @@
 <?php
 
 return array(
+    'db' => array(
+        'driver' => 'pdo_mysql',
+        'host' => 'localhost',
+        'user' => 'username',
+        'password' => 'password',
+        'dbname' => 'chatwall',
+
+    ),
+    /* example for sqlite
+    'db' => array(
+        'driver' => 'pdo_sqlite',
+        'path' => SYSTEM_DIR . '\db.sqlite'
+
+    ),*/
+
     'routes' => array(
         '/' => 'home.home',
         '/user/save' => 'home.userSave',
@@ -13,18 +28,5 @@ return array(
     'cache_dir' => SYSTEM_DIR . '/cache',
     'templates_dir' => SYSTEM_DIR . '/templates',
     'media_dir' => SYSTEM_DIR . '/www/media',
-    'db' => array(
-        'driver' => 'pdo_mysql',
-        'host' => 'localhost',
-        'user' => 'username',
-        'password' => 'password',
-        'dbname' => 'chatwall',
-
-    ),
-    'db2' => array(
-        'driver' => 'pdo_sqlite',
-        'path' => SYSTEM_DIR . '\db.sqlite'
-
-    ),
     'timezone' => 'Europe/Moscow'
 );
