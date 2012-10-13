@@ -1,8 +1,8 @@
 <?php
 namespace App\Models;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use App\System\DomainObject;
+use \Doctrine\Common\Collections\ArrayCollection;
+use \App\System\DomainObject;
 
 /**
  * @Entity @Table(name="users")

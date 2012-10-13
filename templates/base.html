@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="utf-8">
     <title>Chatwall</title>
@@ -16,11 +16,13 @@
         }
     </style>
     <link href="/bootstrap/css/bootstrap-responsive.min" rel="stylesheet">
+    <link href="/bootstrap/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet">
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+
 </head>
 
 <body>
@@ -43,7 +45,7 @@
         </div>
         <div class="span4">
             <div class="well">
-
+                Hello, <a href="#" id="username">{{ user.asArray.name }}</a>
             </div>
         </div>
     </div>
@@ -60,5 +62,28 @@
 
     <script src="http://code.jquery.com/jquery.min.js"></script>
     <script src="/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/bootstrap/bootstrap-editable/js/bootstrap-editable.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#username').editable({
+                type:  'text',
+                name:  'name',
+                url:   '/user/save',
+                title: 'Enter username',
+                placement: 'bottom',
+                inputclass: 'span3',
+                send: 'always',
+                validate: function(value) {
+                    if($.trim(value) == '')
+                        return "Name can't be empty";
+                }
+            });
+        });
+    </script>
+    <style>
+        #username, #username form {
+            display: inline;
+        }
+    </style>
 </body>
 </html>
