@@ -83,8 +83,8 @@
     <script type="text/javascript">
         var last_message = 0;
         var last_changes = {{ now }};
-        var MESSAGES_INTERVAL = 5;
-        var CHANGES_INTERVAL = 7;
+        var MESSAGES_INTERVAL = 20;
+        var CHANGES_INTERVAL = 21;
 
 
         function get_attach_wrapper(str) {
@@ -99,8 +99,17 @@
             }
         }
 
+        function get_attachment(type, data) {
+            if(type=='link') {
+                return '<hr><i class="icon-share"></i> <a rel="nofollow" href="'+data+'">'+data+'</a>';
+            } else if(type=='image') {
+                return '<hr><img src="/media/'+data+'">';
+            } else if(type=='video') {
+                return '<hr><iframe width="560" height="315" src="http://www.youtube.com/embed/'+data+'" frameborder="0" allowfullscreen></iframe>';
+            }
+        }
+
         function delete_message(id) {
-            //TODO error handling
             $.getJSON(
                 '/messages/delete?id='+id,
                 function(data) {
@@ -110,7 +119,6 @@
         }
 
         function like_message(id) {
-            //TODO error handling
             $.getJSON(
                 '/messages/like?id='+id,
                 function(data) {
@@ -124,7 +132,7 @@
 
 
         function load_messages() {
-            //TODO error handling
+            attachment_types = ['link', 'image', 'video'];
             $.getJSON(
                 '/messages/getlast?from='+last_message,
                 function(data) {
@@ -139,6 +147,14 @@
                                 '</div>'+
                                 message.text+
                             '</div>');
+
+                        for(type in attachment_types) {
+                            if(message.attachments[attachment_types[type]]) {
+                                $.each(message.attachments[attachment_types[type]], function(i, attachment) {
+                                    $('#message'+message.id).append(get_attachment(attachment_types[type], attachment));
+                                });
+                            }
+                        }
 
                         $('#message'+message.id+' .delete-message').click(function() {
                             delete_message(message.id);
@@ -204,9 +220,8 @@
 
                 }
             });
-
             $('#add_picture').click(function(){
-                $("#attachments").append(get_attach_wrapper('Select image: <input name="images[]" type="file">'));
+                $("#attachments").append(get_attach_wrapper('Select image: <input name="images[]" type="file" accept="image/x-png, image/gif, image/jpeg">'));
             });
 
             $('#add_video').click(function(){

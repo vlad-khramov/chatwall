@@ -120,6 +120,10 @@ class Message extends DomainObject implements DeleteMarkable {
         $user->addLikedMessage($this);
     }
 
+    public function addAttachment(Attachment $attachment) {
+        $this->attachments[] = $attachment;
+    }
+
 
 }
 
@@ -196,13 +200,19 @@ class Attachment extends DomainObject {
      **/
     protected $type;
     /**
-     * @Column(type="datetime")
+     * @Column(type="string")
      **/
     protected $data;
     /**
      * @ManyToOne(targetEntity="Message", inversedBy="attachments")
      **/
     protected $message;
+
+    public function setMessage(Message $message) {
+        $message->addAttachment($this);
+        $this->message = $message;
+
+    }
 
 }
 

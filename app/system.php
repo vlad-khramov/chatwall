@@ -99,6 +99,10 @@ class App {
     public function run() {
         date_default_timezone_set(Locator::getConfig()->timezone);
 
+        set_error_handler(function($errno, $errstr, $errfile, $errline ){
+            throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+        });
+
         $router = new Router(Locator::getConfig()->routes);
 
         $actionFullName = $router->getControllerName(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
@@ -202,7 +206,7 @@ class DomainObject {
     public function setOptions(array $options)
     {
         foreach ($options as $key => $value) {
-            $this->$key = $value;
+            $this->__set($key, $value);
         }
         return $this;
     }
@@ -262,8 +266,8 @@ class Manager {
         }
     }
 
-    public function delete($object, $flush = false) {
-        if($this->deleteMarkable) {
+    public function delete($object, $flush = false, $forceDelete = false) {
+        if($this->deleteMarkable && !$forceDelete) {
             $object->isDeleted = new \DateTime();
             $this->em->persist($object);
         } else {
@@ -272,6 +276,10 @@ class Manager {
         if($flush) {
             $this->em->flush();
         }
+    }
+
+    public function flush() {
+        $this->em->flush();
     }
 
 

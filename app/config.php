@@ -12,6 +12,7 @@ return array(
     ),
     'cache_dir' => SYSTEM_DIR . '/cache',
     'templates_dir' => SYSTEM_DIR . '/templates',
+    'media_dir' => SYSTEM_DIR . '/www/media',
     'db' => array(
         'driver' => 'pdo_mysql',
         'host' => 'localhost',

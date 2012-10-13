@@ -5,6 +5,7 @@ use \App\System\Controller;
 use \App\System\Manager;
 use \App\Models\User;
 use \App\Models\Message;
+use \App\Models\Attachment;
 use \App\Models\MessageManager;
 
 
@@ -12,11 +13,14 @@ class Home extends Controller {
 
     protected $userManager;
     protected $messageManager;
+    protected $attachmentManager;
+
 
     public function __construct($request) {
         parent::__construct($request);
         $this->userManager = new Manager("\\App\\Models\\User");
         $this->messageManager = new MessageManager();
+        $this->attachmentManager = new Manager("\\App\\Models\\Attachment");
     }
 
     protected function getUser() {
@@ -80,7 +84,8 @@ class Home extends Controller {
     public function messagesAdd() {
         $user = $this->getUser();
 
-        if(empty($this->request['FILES']) && empty($this->request['POST']['videos'])
+
+        if(empty($this->request['FILES']['images']) && empty($this->request['POST']['videos'])
             && empty($this->request['POST']['links']) && empty($this->request['POST']['message'])) {
             return array(
                 'code' => 400,
@@ -93,9 +98,74 @@ class Home extends Controller {
             'date' => new \DateTime(),
             'user' => $user
         ));
-
         $this->userManager->save($user);
-        $this->messageManager->save($message, true);
+        $this->messageManager->save($message);
+
+        if(!empty($this->request['FILES']['images'])) {
+            $images = $this->request['FILES']['images'];
+            foreach(array_keys($images['name']) as $fileNum) {
+                $tmp_name = $images['tmp_name'][$fileNum];
+                if(!is_uploaded_file($tmp_name)) {
+                    continue;
+                }
+                try{
+                    $imageInfo = getimagesize($tmp_name);
+                }catch (\Exception $e) {
+                    continue;
+                }
+                if(empty($imageInfo[0]) || empty($imageInfo[1])){
+                    continue;
+                }
+                $newFileName = rand(1,PHP_INT_MAX) . $images['name'][$fileNum];
+                try {
+                    move_uploaded_file($tmp_name,  Locator::getConfig()->media_dir . '/' . $newFileName);
+                } catch (\Exception $e) {
+                    continue;
+                }
+
+                $attachment = new Attachment(array(
+                    'type' => 'image',
+                    'data' => $newFileName,
+                    'message' => $message
+                ));
+                $this->attachmentManager->save($attachment);
+            }
+        }
+
+
+        if(isset($this->request['POST']['links']) && is_array($this->request['POST']['links'])) {
+            foreach($this->request['POST']['links'] as $link) {
+                if(filter_var($link, FILTER_VALIDATE_URL) === false)continue;
+
+                $attachment = new Attachment(array(
+                    'type' => 'link',
+                    'data' => $link,
+                    'message' => $message
+                ));
+                $this->attachmentManager->save($attachment);
+
+            }
+        }
+
+        if(isset($this->request['POST']['videos']) && is_array($this->request['POST']['videos'])) {
+            foreach($this->request['POST']['videos'] as $video) {
+                if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video, $match)) {
+                    $videoId = $match[1];
+
+                    $attachment = new Attachment(array(
+                        'type' => 'video',
+                        'data' => $videoId,
+                        'message' => $message
+                    ));
+                    $this->attachmentManager->save($attachment);
+
+                }
+            }
+        }
+
+        if($message->attachments->count() || $message->text) {
+            $this->messageManager->flush();
+        }
 
     }
 
@@ -126,17 +196,20 @@ class Home extends Controller {
 
         $resultJSON = array();
         foreach(array_reverse($messages) as $message) {
-            $resultJSON[] = array(
+            $resultJSON[$message->id] = array(
                 'id' => $message->id,
                 'text' => $message->text,
                 'date' => $message->date->format('H:i:s'),
                 'own' => $message->user == $user,
                 'username' => $message->user->name,
                 'likes_count' => $message->likesCount,
-                'liked' => $message->likedUsers->contains($user)
+                'liked' => $message->likedUsers->contains($user),
+                'attachments' => array()
             );
+            foreach($message->attachments as $attachment) {
+                $resultJSON[$message->id]['attachments'][$attachment->type][] = $attachment->data;
+            }
         }
-
         return array(
             'content_type' => 'application/json',
             'text' => json_encode($resultJSON)
