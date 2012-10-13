@@ -99,16 +99,16 @@ class Home extends Controller {
         $from = (int)$this->param('from', 0);
 
 
-        $dql = "SELECT m, u FROM \\App\\Models\\Message m JOIN m.user u WHERE m.id>{$from} ORDER BY m.date";
+        $dql = "SELECT m, u FROM \\App\\Models\\Message m JOIN m.user u WHERE m.id>{$from} ORDER BY m.date DESC";
 
         $query = $this->em->createQuery($dql);
         if(!$from) {
-            $query->setMaxResults(10);
+            $query->setMaxResults(5);
         }
         $messages = $query->getResult();
 
         $resultJSON = array();
-        foreach($messages as $message) {
+        foreach(array_reverse($messages) as $message) {
             $resultJSON[] = array(
                 'id' => $message->id,
                 'text' => $message->text,
